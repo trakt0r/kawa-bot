@@ -14,6 +14,8 @@ module Http =
     type HttpListener =
         val private _url: string
         val private _handlers: Dictionary<string, UrlHandler>
+        [<DefaultValue>]
+        val mutable private _isRunning: bool
 
         new(url: string) =
             {
@@ -21,17 +23,18 @@ module Http =
                 _handlers = Dictionary();
             }
 
-        member this.Register(handler: UrlHandler) =
+        member this.Register(handler: UrlHandler): unit =
             this._handlers.Add(handler.Url, handler);
             
-        member this.Run() = 
+        member this.Run(): unit = 
+            this._isRunning <- true
             let listener = new System.Net.HttpListener()
             listener.Prefixes.Add this._url
             listener.Start()
             async {
                 printfn "[%s] Listening to %s started" (Utils.ToDateTimeString DateTime.Now) this._url
                 printfn "[%s] Press any key to exit..." (Utils.ToDateTimeString DateTime.Now)
-                while true do 
+                while this._isRunning do 
                     let! context = Async.FromBeginEnd(listener.BeginGetContext, listener.EndGetContext)
                     let url = context.Request.RawUrl.Substring(1).Split('?').[0];
                     match this._handlers.TryGetValue(url) with
@@ -39,6 +42,10 @@ module Http =
                         | _ -> ()
             }
             |> Async.Start
+            |> ignore
+
+        member this.Stop(): unit =
+            this._isRunning = false
             |> ignore
 
         member private this.Invoke(handler: UrlHandler, ctx: HttpListenerContext): Async<unit> =
