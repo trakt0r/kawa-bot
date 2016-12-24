@@ -12,4 +12,5 @@ module Program =
         listener.Register(HealthController.GetUrlHandler())
         listener.Run()
         Console.ReadKey true |> ignore
+        listener.Stop()
         0
