@@ -33,7 +33,7 @@ module Http =
                 printfn "[%s] Press any key to exit..." (Utils.ToDateTimeString DateTime.Now)
                 while true do 
                     let! context = Async.FromBeginEnd(listener.BeginGetContext, listener.EndGetContext)
-                    let url = context.Request.RawUrl.Substring(1);
+                    let url = context.Request.RawUrl.Substring(1).Split('?').[0];
                     match this._handlers.TryGetValue(url) with
                         | true, handler -> this.Invoke(handler, context) |> Async.Start
                         | _ -> ()
