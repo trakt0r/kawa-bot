@@ -11,6 +11,7 @@ module Program =
         let listener = new HttpListener("http://*:80/")
         listener.Register(HealthController.GetUrlHandler())
         listener.Register(SlackVerificationController.GetUrlHandler())
+        listener.Register(OAuthController.GetUrlHandler())
         listener.Run()
         Console.ReadKey true |> ignore
         listener.Stop()
