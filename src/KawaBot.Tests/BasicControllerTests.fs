@@ -7,7 +7,7 @@ open NUnit.Framework
 
 [<TestFixture>]
 [<Category(Categories.Integration)>]
-type HealthControllerTests =
+type BasicControllerTests =
     val private _server: Http.HttpListener
     val private _feeder: Feeder
 
@@ -28,7 +28,12 @@ type HealthControllerTests =
         this._server.Stop()
 
     [<Test>]
-    member this.TestServerRespondsWithOK() =
+    member this.TestNonExistingEndpoint() =
+        let response = this._feeder.Send("/non-existing") |> Async.RunSynchronously
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound))
+
+    [<Test>]
+    member this.TestHealthEndpoint() =
         let response = this._feeder.Send("/health") |> Async.RunSynchronously
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK))
         Assert.That(response.Content.ReadAsStringAsync().Result, Is.EqualTo("OK"))
