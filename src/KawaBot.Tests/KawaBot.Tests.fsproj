@@ -53,7 +53,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Categories.fs" />
-    <Compile Include="HealthControllerTests.fs" />
+    <Compile Include="BasicControllerTests.fs" />
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
