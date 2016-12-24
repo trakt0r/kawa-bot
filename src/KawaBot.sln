@@ -7,6 +7,8 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "KawaBot.Server", "KawaBot.S
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "KawaBot.Feeder", "KawaBot.Feeder\KawaBot.Feeder.fsproj", "{81FFE185-AA34-428E-941D-0718EF968D76}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "KawaBot.Tests", "KawaBot.Tests\KawaBot.Tests.fsproj", "{D5B7130D-7ECE-4D8A-91E1-ED7A4E6B444C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{81FFE185-AA34-428E-941D-0718EF968D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{81FFE185-AA34-428E-941D-0718EF968D76}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{81FFE185-AA34-428E-941D-0718EF968D76}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5B7130D-7ECE-4D8A-91E1-ED7A4E6B444C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5B7130D-7ECE-4D8A-91E1-ED7A4E6B444C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5B7130D-7ECE-4D8A-91E1-ED7A4E6B444C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5B7130D-7ECE-4D8A-91E1-ED7A4E6B444C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
