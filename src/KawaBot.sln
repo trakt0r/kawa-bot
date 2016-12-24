@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.26014.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "KawaBot.Server", "KawaBot.Server\KawaBot.Server.fsproj", "{AA21964C-221A-422C-A79F-BD5F43AEBAD6}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "KawaBot.Feeder", "KawaBot.Feeder\KawaBot.Feeder.fsproj", "{81FFE185-AA34-428E-941D-0718EF968D76}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{AA21964C-221A-422C-A79F-BD5F43AEBAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA21964C-221A-422C-A79F-BD5F43AEBAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA21964C-221A-422C-A79F-BD5F43AEBAD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81FFE185-AA34-428E-941D-0718EF968D76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81FFE185-AA34-428E-941D-0718EF968D76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81FFE185-AA34-428E-941D-0718EF968D76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81FFE185-AA34-428E-941D-0718EF968D76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
