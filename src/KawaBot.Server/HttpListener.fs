@@ -4,56 +4,66 @@ open System
 open System.Collections.Generic
 open System.Net
 open NLog
+open System.Text.RegularExpressions
 
 module Http =
     type HandlerFunc = HttpListenerRequest -> HttpListenerResponse -> Async<unit>
 
-    type UrlHandler(url: string, handler: HandlerFunc) =
-        member this.Url: string = url
+    type UrlHandler(urlPath: string, handler: HandlerFunc) =
+        member this.UrlPath: string = urlPath
         member this.Handler: HandlerFunc = handler
 
     let Logger = LogManager.GetLogger("KawaBot.Server")
 
     type HttpListener =
-        val private _url: string
+        val private _host: string
+        val private _port: int
         val private _handlers: Dictionary<string, UrlHandler>
         val private _handlerNotFound: HandlerFunc
         
         [<DefaultValue>]
         val mutable private _listener: System.Net.HttpListener
 
-        new(url: string) =
+        new(host: string, port: int) =
             {
-                _url = url
+                _host = host
+                _port = port
                 _handlers = Dictionary()
                 _handlerNotFound = fun req resp -> async {
                     resp.StatusCode <- (int)HttpStatusCode.NotFound
                 }
             }
 
+        member this.Host : string = this._host
+
+        member this.Port : int = this._port
+        
+        member this.UrlPrefix : string = 
+            sprintf "http://%s:%d/" this.Host this.Port
+
         member this.Register(handler: UrlHandler): unit =
-            this._handlers.Add(handler.Url, handler);
+            this._handlers.Add(handler.UrlPath, handler);
             
         member this.Run(): unit = 
             this._listener <- new System.Net.HttpListener()
-            this._listener.Prefixes.Add this._url
+            this._listener.Prefixes.Add this.UrlPrefix
             this._listener.Start()
             async {
-                Logger.Info("Listening to {0} started", this._url)
+                Logger.Info("Listening to {0} started", this.UrlPrefix)
                 Logger.Info("Press any key to exit...")
                 let mutable keepRunning = true
                 while keepRunning do
                     match this.GetContext() with
                         | None -> keepRunning <- false
                         | Some(context) ->
-                            let url = context.Request.RawUrl.Substring(1).Split('?').[0];
+                            let urlPath = context.Request.RawUrl.Substring(1).Split('?').[0];
                             let invokeAsync = fun handle ->
                                 this.Invoke(context.Request.RawUrl, handle, context)
                                 |> Async.Start
-                            match this._handlers.TryGetValue(url) with
+                            match this._handlers.TryGetValue(urlPath) with
                                 | true, handler -> invokeAsync handler.Handler
                                 | _ -> invokeAsync this._handlerNotFound
-                Logger.Info("Listening to {0} stopped", this._url)
+                Logger.Info("Listening to {0} stopped", this.UrlPrefix)
             }
             |> Async.Start
             |> ignore
