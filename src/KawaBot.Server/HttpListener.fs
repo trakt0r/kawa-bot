@@ -3,6 +3,7 @@
 open System
 open System.Collections.Generic
 open System.Net
+open NLog
 
 module Http =
     type HandlerFunc = HttpListenerRequest -> HttpListenerResponse -> Async<unit>
@@ -10,6 +11,8 @@ module Http =
     type UrlHandler(url: string, handler: HandlerFunc) =
         member this.Url: string = url
         member this.Handler: HandlerFunc = handler
+
+    let Logger = LogManager.GetLogger("KawaBot.Server")
 
     type HttpListener =
         val private _url: string
@@ -36,8 +39,8 @@ module Http =
             this._listener.Prefixes.Add this._url
             this._listener.Start()
             async {
-                printfn "[%s] Listening to %s started" (Utils.ToDateTimeString DateTime.Now) this._url
-                printfn "[%s] Press any key to exit..." (Utils.ToDateTimeString DateTime.Now)
+                Logger.Info("Listening to {0} started", this._url)
+                Logger.Info("Press any key to exit...")
                 let mutable keepRunning = true
                 while keepRunning do
                     match this.GetContext() with
@@ -50,6 +53,7 @@ module Http =
                             match this._handlers.TryGetValue(url) with
                                 | true, handler -> invokeAsync handler.Handler
                                 | _ -> invokeAsync this._handlerNotFound
+                Logger.Info("Listening to {0} stopped", this._url)
             }
             |> Async.Start
             |> ignore
@@ -69,8 +73,8 @@ module Http =
 
         member private this.Invoke(url: string, handle: HandlerFunc, ctx: HttpListenerContext): Async<unit> =
             async {
-                printfn "[%s] GET %s" (Utils.ToDateTimeString DateTime.Now) url
+                Logger.Info("{0} {1}", ctx.Request.HttpMethod, url)
                 let! _ = handle ctx.Request ctx.Response
                 ctx.Response.Close()
-                printfn "[%s] %d %s" (Utils.ToDateTimeString DateTime.Now) ctx.Response.StatusCode ctx.Response.StatusDescription
+                Logger.Info("{0} {1}", ctx.Response.StatusCode, ctx.Response.StatusDescription)
             }
