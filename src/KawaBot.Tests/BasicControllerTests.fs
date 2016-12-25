@@ -9,13 +9,14 @@ open NUnit.Framework
 [<Category(Categories.Integration)>]
 type BasicControllerTests =
     val private _server: Http.HttpListener
-    val private _feeder: Feeder
+    [<DefaultValue>]
+    val mutable private _feeder: Feeder
 
     new() as this =
         {
-            _server = new Http.HttpListener("http://*:80/")
-            _feeder = new Feeder(80)
+            _server = new Http.HttpListener("localhost", 49999)
         } then
+            this._feeder <- new Feeder(this._server.Port)
             HealthController.GetUrlHandler()
             |> this._server.Register
 

@@ -8,7 +8,7 @@ open Http
 module Program =
     [<EntryPoint>]
     let main argv =
-        let listener = new HttpListener("http://*:80/")
+        let listener = new HttpListener("*", 50000)
         listener.Register(HealthController.GetUrlHandler())
         listener.Run()
         Console.ReadKey true |> ignore
