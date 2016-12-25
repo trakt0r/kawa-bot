@@ -55,10 +55,15 @@
     <Compile Include="Categories.fs" />
     <Compile Include="BasicControllerTests.fs" />
     <Content Include="packages.config" />
+    <Content Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core, Version=$(TargetFSharpCoreVersion), Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.4.4.1\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="nunit.framework">
