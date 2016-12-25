@@ -10,7 +10,5 @@ module Program =
     let main argv =
         let listener = new HttpListener("*", 50000)
         listener.Register(HealthController.GetUrlHandler())
-        listener.Run()
-        Console.ReadKey true |> ignore
-        listener.Stop()
+        listener.AsyncRun() |> Async.RunSynchronously
         0

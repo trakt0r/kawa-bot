@@ -44,13 +44,12 @@ module Http =
         member this.Register(handler: UrlHandler): unit =
             this._handlers.Add(handler.UrlPath, handler);
             
-        member this.Run(): unit = 
+        member this.AsyncRun(): Async<unit> = 
             this._listener <- new System.Net.HttpListener()
             this._listener.Prefixes.Add this.UrlPrefix
             this._listener.Start()
             async {
                 Logger.Info("Listening to {0} started", this.UrlPrefix)
-                Logger.Info("Press any key to exit...")
                 let mutable keepRunning = true
                 while keepRunning do
                     match this.GetContext() with
@@ -65,8 +64,6 @@ module Http =
                                 | _ -> invokeAsync this._handlerNotFound
                 Logger.Info("Listening to {0} stopped", this.UrlPrefix)
             }
-            |> Async.Start
-            |> ignore
 
         member this.Stop(): unit =
             this._listener.Stop()

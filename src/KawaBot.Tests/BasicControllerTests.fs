@@ -22,7 +22,7 @@ type BasicControllerTests =
 
     [<SetUp>]
     member this.SetUp() =
-        this._server.Run()
+        this._server.AsyncRun() |> Async.Start
 
     [<TearDown>]
     member this.TearDown() =
