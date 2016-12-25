@@ -8,6 +8,9 @@ open Newtonsoft.Json
 open Environment
 open System.Collections.Generic
 open Newtonsoft.Json.Linq
+open System.Text
+open System.Threading.Tasks
+open System
 
 [<JsonObject>]
 type SlackError =
@@ -45,24 +48,36 @@ type OAuthSuccessResponse =
         Bot: OAuthBot;
     }
 
-module OAuthController =
-    open System.Text
-
-    let GetUrlHandler() =
-        new UrlHandler("oauth", fun req resp -> async {
+module OAuthHelper =
+    let GetOAuthURL(code: string): string =
             let urlArgs = [
                 "https://slack.com/api/oauth.access";
                 sprintf "?client_id=%s" Environment.ClientID;
                 sprintf  "&client_secret=%s" Environment.ClientSecret;
-                sprintf "&code=%s" (req.QueryString.Get("code"));
+                sprintf "&code=%s" code;
             ] 
-            let url = urlArgs |> String.concat ""
-            use authReq = new HttpClient()
+            urlArgs |> String.concat ""
+
+type IHTTPRequester = 
+    abstract member HTTPGet: url: string -> HttpResponseMessage
+
+type HTTPRequester() =
+    interface IHTTPRequester with
+        member this.HTTPGet (url: string): HttpResponseMessage =
+            use client = new HttpClient()
             Logger.Debug("performing request GET %s\n", url)
-            use! authResp = authReq.GetAsync(url) |> Async.AwaitTask
+            client.GetAsync(url).Result
+
+
+type OAuthController(requester: IHTTPRequester) =
+    let _requester = requester
+
+    member this.GetUrlHandler() =
+        new UrlHandler("oauth", fun req resp -> async {
+            let url = OAuthHelper.GetOAuthURL(req.QueryString.Get("code"))
+            use authResp = _requester.HTTPGet(url)
             Logger.Debug("success, status %s\n", (authResp.StatusCode.ToString()))
             let! body = authResp.Content.ReadAsStringAsync() |> Async.AwaitTask
-            Logger.Debug("response: %s\n", body)
             let jobj = JObject.Parse(body)
             match jobj.TryGetValue("ok") with
                 | true, ok -> 
