@@ -18,6 +18,8 @@ type BasicControllerTests =
         } then
             HealthController.GetUrlHandler()
             |> this._server.Register
+            SlackVerificationController.GetUrlHandler()
+            |> this._server.Register
 
     [<SetUp>]
     member this.SetUp() =
@@ -37,3 +39,15 @@ type BasicControllerTests =
         let response = this._feeder.Send("/health") |> Async.RunSynchronously
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK))
         Assert.That(response.Content.ReadAsStringAsync().Result, Is.EqualTo("OK"))
+
+    [<Test>]
+    member this.TestVerification() = 
+        let v = {
+            Token = "";
+            Challenge = "challenge";
+            Type = "";
+        }
+        let response = this._feeder.PostJSON("/slack", v) |> Async.RunSynchronously
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK))
+        Assert.That(response.Content.ReadAsStringAsync().Result, Is.EqualTo(v.Challenge))
+ 
