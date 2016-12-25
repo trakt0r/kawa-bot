@@ -18,7 +18,7 @@ module Http =
     type HttpListener =
         val private _host: string
         val private _port: int
-        val private _handlers: Dictionary<string, UrlHandler>
+        val private _handlers: Dictionary<string, HandlerFunc>
         val private _handlerNotFound: HandlerFunc
         
         [<DefaultValue>]
@@ -42,7 +42,7 @@ module Http =
             sprintf "http://%s:%d/" this.Host this.Port
 
         member this.Register(handler: UrlHandler): unit =
-            this._handlers.Add(handler.UrlPath, handler);
+            this._handlers.Add(handler.UrlPath, handler.Handler);
             
         member this.AsyncRun(): Async<unit> = 
             this._listener <- new System.Net.HttpListener()
@@ -50,27 +50,21 @@ module Http =
             this._listener.Start()
             async {
                 Logger.Info("Listening to {0} started", this.UrlPrefix)
-                let mutable keepRunning = true
-                while keepRunning do
-                    match this.GetContext() with
-                        | None -> keepRunning <- false
-                        | Some(context) ->
-                            let urlPath = context.Request.RawUrl.Substring(1).Split('?').[0];
-                            let invokeAsync = fun handle ->
-                                this.Invoke(context.Request.RawUrl, handle, context)
-                                |> Async.Start
-                            match this._handlers.TryGetValue(urlPath) with
-                                | true, handler -> invokeAsync handler.Handler
-                                | _ -> invokeAsync this._handlerNotFound
+                Seq.unfold (fun (l: System.Net.HttpListener) -> HttpListener.GetContext(l)) this._listener
+                |> Seq.fold (fun _ ctx ->
+                    let urlPath = ctx.Request.RawUrl.Substring(1).Split('?').[0]
+                    defaultArg (tryGet this._handlers urlPath) this._handlerNotFound
+                    |> fun handle -> HttpListener.Invoke(ctx.Request.RawUrl, handle, ctx)
+                    |> Async.Start) ()
                 Logger.Info("Listening to {0} stopped", this.UrlPrefix)
             }
 
         member this.Stop(): unit =
             this._listener.Stop()
 
-        member private this.GetContext(): option<HttpListenerContext> =
+        static member private GetContext(listener: System.Net.HttpListener): option<HttpListenerContext * System.Net.HttpListener> =
             try
-                Some(this._listener.GetContext())
+                Some(listener.GetContext(), listener)
             with
                 | :? HttpListenerException as e ->
                     if e.ErrorCode = 995 then // ERROR_OPERATION_ABORTED
@@ -78,7 +72,7 @@ module Http =
                     else
                         reraise()
 
-        member private this.Invoke(url: string, handle: HandlerFunc, ctx: HttpListenerContext): Async<unit> =
+        static member private Invoke(url: string, handle: HandlerFunc, ctx: HttpListenerContext): Async<unit> =
             async {
                 Logger.Info("{0} {1}", ctx.Request.HttpMethod, url)
                 let! _ = handle ctx.Request ctx.Response
